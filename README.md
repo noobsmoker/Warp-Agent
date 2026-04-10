@@ -48,6 +48,35 @@ User Request
 └─────────────────────────┘
 ```
 
+### System Architecture
+
+![System Architecture](docs/images/system-architecture.jpg)
+
+The complete system showing:
+- **Tool Server** - OpenClaw MCP tools
+- **Local Model** - M1/MPS inference
+- **Agent Loop** - Thought → Action → Observation cycle
+
+### Component Stack
+
+![Component Stack](docs/images/component-stack.jpg)
+
+Layers:
+- **OpenAI API** - HTTP interface
+- **MCP Bridge** - Tool protocol
+- **Tools** - Code, search, files
+- **M1 Bridge** - Metal performance
+- **Local Model** - Ollama/transformers
+
+### Agent Execution Flow
+
+![Agent Flow](docs/images/agent-flow.jpg)
+
+The agent loop:
+1. **Thought** - Model reasons about the task
+2. **Action** - Executes tool or generates response
+3. **Observation** - Receives result, continues reasoning
+
 ## Installation
 
 ```bash
