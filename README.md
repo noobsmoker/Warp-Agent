@@ -180,6 +180,80 @@ councils:
 | `file_system` | Read/write files |
 | `knowledge_graph` | RAG memory store |
 
+## OpenClaw Integration (Option A - Recommended)
+
+Warp-Claw can connect to **OpenClaw** as a tool provider via MCP. This gives your local agents access to OpenClaw's full tool ecosystem without running K8s.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────┐
+│              Warp-Claw (Local)                  │
+│  ┌─────────────┐    ┌─────────────────────────┐│
+│  │   Agents    │───▶│  OpenClaw MCP Client     ││
+│  │  (Local LLM)│    │  src/tools/openclaw_mcp  ││
+│  └─────────────┘    └───────────┬─────────────┘│
+└─────────────────────────────────┼───────────────┘
+                                  │ HTTP/MCP
+                                  ▼
+┌─────────────────────────────────────────────────┐
+│           OpenClaw (Your Server)                │
+│  Tool Server (web_search, read_file, etc.)      │
+│  Running at: http://localhost:8080              │
+└─────────────────────────────────────────────────┘
+```
+
+### Setup
+
+```bash
+# 1. Start OpenClaw with tool server enabled
+openclaw gateway start
+
+# 2. In warp-claw, configure OpenClaw connection
+export OPENCLAW_URL="http://localhost:8080"
+export OPENCLAW_API_KEY="your-api-key"  # if auth enabled
+```
+
+### Usage
+
+```python
+from src.tools.openclaw_mcp import OpenClawMCPClient
+
+# Connect to OpenClaw
+client = OpenClawMCPClient("http://localhost:8080")
+await client.connect()
+
+# Use OpenClaw tools in your agents
+result = await client.call_tool("web_search", {"query": "AI agents"})
+print(result.result)
+
+# Or use the executor with local fallback
+from src.tools.openclaw_mcp import OpenClawToolExecutor
+
+async with OpenClawToolExecutor("http://localhost:8080") as executor:
+    # If OpenClaw fails, falls back to local tools
+    result = await executor.execute("web_search", {"query": "test"})
+```
+
+### Tool Categories Available
+
+When connected to OpenClaw, warp-claw agents get access to:
+
+| Category | Tools |
+|----------|-------|
+| **Web** | `web_search`, `web_fetch`, `browser` |
+| **File** | `read_file`, `write_file`, `glob` |
+| **Code** | `execute_command`, `run_tests` |
+| **GitHub** | `gh_issues`, `gh_pr`, `gh_actions` |
+| **Messaging** | `send_message`, `send_email` |
+
+### Benefits
+
+- **No K8s needed** — Just network connectivity to OpenClaw
+- **Local inference** — Models run on your M1/M2/M3
+- **OpenClaw tools** — Full tool ecosystem via MCP
+- **Fallback** — Local tools work if OpenClaw unavailable
+
 ## Makefile Commands
 
 ```bash
