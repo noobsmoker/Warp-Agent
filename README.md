@@ -1,79 +1,88 @@
 # 🤖 Warp-Claw
 
-Hybrid infrastructure combining Warp-Cortex with OpenAI-compatible API for local Apple Silicon deployment.
+> Hybrid infrastructure combining Warp-Cortex with OpenAI-compatible API for local Apple Silicon deployment.
+
+## Why Warp-Claw?
+
+Warp-Claw bridges two powerful systems:
+- **Warp-Cortex**: JorgeLRW's multi-agent architecture with River/Stream, Prism weight sharing, and Topological Synapse
+- **OpenAI API**: Standard HTTP endpoints compatible with the entire OpenAI ecosystem
+
+Deploy local AI agents with the same tooling you'd use with GPT-4.
 
 ## Features
 
-- **Multi-Agent Councils**: Research, Code, Creative, and Meta councils that collaborate in real-time
-- **OpenAI-Compatible API**: Use the `openai` Python client to interact with local models
-- **M1/MPS Optimization**: Running on Apple Silicon with Metal Performance Shaders
-- **Tool Integration**: Code execution, web search, file system, and knowledge graph tools
-- **MCP Bridge**: Connect external Model Context Protocol servers
-- **WebSocket Streaming**: Real-time agent activity streaming
-- **Optional Dashboard**: Streamlit UI for monitoring and interaction
+| Feature | Description |
+|---------|-------------|
+| **Multi-Agent Councils** | Research, Code, Creative, and Meta councils that collaborate in real-time |
+| **OpenAI-Compatible API** | Use `openai` Python client, curl, or any OpenAI-compatible tool |
+| **M1/MPS Optimization** | Metal Performance Shaders for Apple Silicon |
+| **Tool Integration** | Code execution, web search, file system, knowledge graph tools |
+| **MCP Bridge** | Connect external Model Context Protocol servers |
+| **WebSocket Streaming** | Real-time agent activity streaming |
+| **Streamlit Dashboard** | Optional UI for monitoring and interaction |
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Client (openai-python)                 │
-└─────────────────────┬───────────────────────────────────┘
-                      │
-                      ▼
-┌─────────────────────────────────────────────────────────┐
-│              OpenAI API Server (:8000)                 │
-│  ┌──────────────────────────────────────────────┐    │
-│  │  POST /v1/chat/completions                   │    │
-│  │  POST /v1/completions                       │    │
-│  │  GET  /v1/models                          │    │
-│  │  POST /v1/agents/spawn                    │    │
-│  └──────────────────┬───────────────────────┘    │
-└──────────────────────┼─────────────────────────────── ────┘
-                       │
-         ┌─────────────┼─────────────┐
-         ▼           ▼           ▼
-┌────────────┐ ┌───────────┐ ┌──────────────┐
-│  Council  │ │  Tools    │ │  WebSocket │
-│Orchestrator│ │ Executor │ │  Stream    │
-└─────┬────┘ └────┬─────┘ └─────────────┘
-      │            │
-      ▼            ▼
+User Request
+     │
+     ▼
+┌────────────────────────────────────────┐
+│   OpenAI API Server (:8000)           │
+│   /v1/chat/completions                │
+│   /v1/agents/spawn                   │
+└─────────────────┬────────────────────┘
+                  │
+      ┌───────────┼───────────┐
+      ▼           ▼           ▼
+┌──────────┐ ┌────────┐ ┌──────────┐
+│ Council  │ │ Tools  │ │WebSocket │
+│Orchestr. │ │Execut. │ │ Stream   │
+└────┬─────┘ └────┬───┘ └────┬────┘
+     │            │
+     ▼            ▼
 ┌─────────────────────────┐
 │   M1 Cortex Bridge      │
-│   (MPS/CPU)            │
+│   (MPS/CPU)             │
 └─────────────────────────┘
+```
+
+## Installation
+
+```bash
+# Clone the repo
+git clone https://github.com/noobsmoker/warp-claw.git
+cd warp-claw
+
+# Create virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
 ```
 
 ## Quick Start
 
-### 1. Install
+### 1. Download a Model
 
 ```bash
-# Clone and install
-git clone https://github.com/yourusername/warp-claw.git
-cd warp-claw
-pip install -r requirements.txt
+python scripts/download_models.py qwen-0.5b
 
 # Or use M1 setup script
 bash scripts/setup_m1.sh
 ```
 
-### 2. Download a Model
-
-```bash
-python scripts/download_models.py qwen-0.5b
-```
-
-### 3. Run the API Server
+### 2. Run the API Server
 
 ```bash
 python -m src.interfaces.openai_api
-# Or: make run
 ```
 
-Server starts on `http://localhost:8000`
+Server starts at `http://localhost:8000`
 
-### 4. Use with OpenAI Client
+### 3. Use with OpenAI Client
 
 ```python
 import openai
@@ -89,22 +98,9 @@ response = client.chat.completions.create(
     messages=[{"role": "user", "content": "Explain quantum computing [VERIFY]"}]
 )
 print(response.choices[0].message.content)
-
-# With tools
-response = client.chat.completions.create(
-    model="qwen-0.5b",
-    messages=[{"role": "user", "content": "Calculate fibonacci(100)"}],
-    tools=[{
-        "type": "function",
-        "function": {
-            "name": "execute_python",
-            "description": "Run Python code"
-        }
-    }]
-)
 ```
 
-### 5. Spawn a Council
+### 4. Spawn a Council
 
 ```python
 import requests
@@ -121,14 +117,24 @@ r = requests.get(f"http://localhost:8000/v1/agents/status/{council_id}")
 print(r.json())
 ```
 
-### 6. Start Dashboard (Optional)
+### 5. Start Dashboard (Optional)
 
 ```bash
-make dashboard
-# Or: streamlit run src/dashboard/app.py
+streamlit run src/dashboard/app.py
 ```
 
 Dashboard at `http://localhost:8501`
+
+## API Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/v1/models` | GET | List available models |
+| `/v1/chat/completions` | POST | Chat completion |
+| `/v1/completions` | POST | Text completion |
+| `/v1/agents/spawn` | POST | Spawn council |
+| `/v1/agents/status/{id}` | GET | Council status |
+| `/v1/agents` | GET | List agents |
 
 ## Configuration
 
@@ -164,35 +170,35 @@ councils:
     triggers: ["[CODE]", "[REVIEW]"]
 ```
 
-## API Endpoints
-
-| Endpoint | Method | Description |
-|----------|-------|-------------|
-| `/v1/models` | GET | List available models |
-| `/v1/chat/completions` | POST | Chat completion |
-| `/v1/completions` | POST | Text completion |
-| `/v1/agents/spawn` | POST | Spawn council |
-| `/v1/agents/status/{id}` | GET | Council status |
-| `/v1/agents` | GET | List agents |
-
-## Tool Reference
+## Tools
 
 | Tool | Description |
 |------|-------------|
 | `execute_python` | Run Python code in sandbox |
-| `web_search` | Search the web |
+| `web_search` | Search DuckDuckGo |
 | `web_fetch` | Fetch URL content |
 | `file_system` | Read/write files |
 | `knowledge_graph` | RAG memory store |
+
+## Makefile Commands
+
+```bash
+make help      # Show available targets
+make setup    # Install & download models
+make test     # Run tests
+make run      # Start API server
+make dashboard # Start dashboard
+make clean   # Clean cache
+```
 
 ## Docker
 
 ```bash
 # Build
-make docker-build
+docker build -t warp-claw:latest .
 
 # Run
-make docker-run
+docker run -p 8000:8000 -p 8501:8501 warp-claw:latest
 ```
 
 ## Requirements
@@ -201,6 +207,16 @@ make docker-run
 - Apple Silicon (M1/M2/M3) for MPS support
 - Or x86_64 with CPU fallback
 
+## Credits
+
+- [Warp-Cortex](https://github.com/JorgeLRW/warp-cortex) - Multi-agent architecture
+- [Qwen](https://github.com/QwenLM/Qwen) - Default models
+- [Llama](https://github.com/meta-llama) - Alternative models
+
 ## License
 
 MIT
+
+---
+
+⭐ Star us on GitHub if this helps!
