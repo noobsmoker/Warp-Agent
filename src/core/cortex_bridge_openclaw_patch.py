@@ -4,11 +4,16 @@ Add this to src/core/cortex_bridge.py or create as cortex_bridge_openclaw.py
 """
 
 import asyncio
+import os
 import re
 from typing import Optional, List, Dict, Any
 
 # Import the OpenClaw bridge
 from .openclaw_mcp_client import WarpClawOpenClawBridge
+
+# Constants
+DEFAULT_QUERY_TRUNCATE = 200
+DEFAULT_OPENCLAW_URL = os.getenv("OPENCLAW_URL", "http://localhost:3000/mcp")
 
 
 class M1CortexBridgeWithOpenClaw:
@@ -93,7 +98,7 @@ class M1CortexBridgeWithOpenClaw:
         """
         # Default: pass the prompt as the query/content parameter
         if tool_name in ["web_search", "search"]:
-            return {"query": prompt[:200]}
+            return {"query": prompt[:DEFAULT_QUERY_TRUNCATE]}
         elif tool_name in ["execute_python", "python", "code"]:
             if "```python" in prompt:
                 code = prompt.split("```python")[1].split("```")[0].strip()

@@ -6,9 +6,14 @@ Enables warp-claw agents to call OpenClaw tools via Model Context Protocol
 import asyncio
 import json
 import os
+import logging
 from typing import Dict, List, Any, Optional
 from contextlib import AsyncExitStack
 from dataclasses import dataclass
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # MCP imports
 try:
@@ -18,6 +23,7 @@ try:
     MCP_AVAILABLE = True
 except ImportError:
     MCP_AVAILABLE = False
+    logger.warning("MCP not installed. Run: pip install 'mcp[cli]'")
 
 
 @dataclass
@@ -35,7 +41,18 @@ class OpenClawMCPClient:
     Allows warp-claw agents to use OpenClaw's tools (web search, code execution, etc.)
     """
 
-    def __init__(self, openclaw_url: str = "http://localhost:3000/mcp"):
+    def __init__(self, openclaw_url: str = None):
+        """
+        Initialize the OpenClaw MCP client
+
+        Args:
+            openclaw_url: URL to OpenClaw's MCP endpoint 
+            (default: env var OPENCLAW_URL or localhost:3000/mcp)
+        """
+        self.openclaw_url = openclaw_url or os.getenv("OPENCLAW_URL", "http://localhost:3000/mcp")
+        self.session: Optional[ClientSession] = None
+        self.exit_stack = AsyncExitStack()
+        self._available_tools: List[Dict[str, Any]] = []
         """
         Initialize the OpenClaw MCP client
 
@@ -83,7 +100,7 @@ class OpenClawMCPClient:
             return True
 
         except Exception as e:
-            print(f"✗ Failed to connect to OpenClaw: {e}")
+            logger.error(f"✗ Failed to connect to OpenClaw: {e}")
             return False
 
     async def _refresh_tools(self):
