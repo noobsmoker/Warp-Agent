@@ -1,5 +1,7 @@
 # 🌀 Warp-Claw
 
+![Warp-Claw Banner](docs/images/warp-claw-banner.jpg)
+
 > Hybrid infrastructure combining Warp-Cortex with OpenAI-compatible API for local Apple Silicon deployment.
 
 ## Why Warp-Claw?
