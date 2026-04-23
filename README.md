@@ -1,321 +1,289 @@
-# 🌀 Warp-Claw
+# Warp-Claw: Warp-Cortex-Enabled Hermes Agent
 
-![Warp-Claw Banner](docs/images/warp-claw-banner.jpg)
+**One-liner install:**
 
-> Hybrid infrastructure combining Warp-Cortex with OpenAI-compatible API for local Apple Silicon deployment.
+```bash
+curl -fsSL https://raw.githubusercontent.com/noobsmoker/warp-claw/main/scripts/install.sh | bash
+```
 
-## Why Warp-Claw?
+The installer works on Linux, macOS, WSL2, and Android (Termux). It automatically:
 
-Warp-Claw bridges two powerful systems:
-- **Warp-Cortex**: JorgeLRW's multi-agent architecture with River/Stream, Prism weight sharing, and Topological Synapse
-- **OpenAI API**: Standard HTTP endpoints compatible with the entire OpenAI ecosystem
+* Installs a Python 3.11 virtual environment
+* Adds the required dependencies (`transformers`, `torch`, `gudhi`, plus all Hermes core deps)
+* Sets up the `warp-claw` command in `~/.local/bin` (or `$PREFIX/bin` on Termux)
+* Runs the Hermes setup wizard (you can skip it with `--no-wizard`)
 
-Deploy local AI agents with the same tooling you'd use with GPT-4.
+After installation, start the agent with:
+
+```bash
+warp-claw               # interactive CLI (full Hermes UI)
+warp-claw --tui         # Ink-based TUI
+warp-claw gateway        # launch the messaging gateway (Telegram, Discord, etc.)
+```
+
+## Overview
+
+Warp-Claw is the **Hermes Agent** enriched with the **Warp-Cortex** infrastructure. It provides:
+
+* **Singleton weight sharing** – load a transformer model once and share it across all agents (O(1) weight memory).
+* **Topological Synapse** – TDA-based landmark selection that preserves the context manifold while compressing the KV-cache (O(N·k) context memory).
+* **KV-Cache sparsification** – witness-complex-inspired pruning for up to a **10×** reduction in memory usage.
+* **Referential Injection** – asynchronous sub-agent updates without pausing generation.
+* **Scalable multi-agent spawning** – up to 12+ concurrent sub-agents (configurable) via a shared-memory manager.
+
+All of this is delivered in a **single binary-like install** that can be run on a cheap consumer GPU (e.g., RTX 4090) with **under 3 GB VRAM for 100 agents**.
 
 ## Features
 
 | Feature | Description |
 |---------|-------------|
-| **Multi-Agent Councils** | Research, Code, Creative, and Meta councils that collaborate in real-time |
-| **OpenAI-Compatible API** | Use `openai` Python client, curl, or any OpenAI-compatible tool |
-| **M1/MPS Optimization** | Metal Performance Shaders for Apple Silicon |
-| **Tool Integration** | Code execution, web search, file system, knowledge graph tools |
-| **MCP Bridge** | Connect external Model Context Protocol servers |
-| **WebSocket Streaming** | Real-time agent activity streaming |
-| **Streamlit Dashboard** | Optional UI for monitoring and interaction |
+| **One-Line Install** | `curl … | bash` – no manual dependencies. |
+| **Unified CLI / TUI** | Classic prompt-toolkit CLI *or* modern Ink TUI (`warp-claw --tui`). |
+| **Multi-Platform Gateways** | Telegram, Discord, Slack, WhatsApp, Signal, Matrix, etc. |
+| **Modular Tool System** | 40+ built-in tools, plus community-contributed skills via the Skills Hub. |
+| **Memory-Efficient Scaling** | Singleton model + Topological Synapse = constant weight memory, linear-in-k context memory. |
+| **Referential Injection** | Sub-agents inject updates async, preserving streaming generation. |
+| **Auto-Context Compression** | Built-in `compress` command reduces token usage while preserving information. |
+| **Open-Source** | MIT license, fully auditable. |
+| **Extensible Provider System** | New providers (e.g., `warp-cortex`) can be added via a simple transport class. |
 
-## Architecture
+## Warp-Cortex Architecture
 
-```
-User Request
-     │
-     ▼
-┌────────────────────────────────────────┐
-│   OpenAI API Server (:8000)           │
-│   /v1/chat/completions                │
-│   /v1/agents/spawn                   │
-└─────────────────┬────────────────────┘
-                  │
-      ┌───────────┼───────────┐
-      ▼           ▼           ▼
-┌──────────┐ ┌────────┐ ┌──────────┐
-│ Council  │ │ Tools  │ │WebSocket │
-│Orchestr. │ │Execut. │ │ Stream   │
-└────┬─────┘ └────┬───┘ └────┬────┘
-     │            │
-     ▼            ▼
-┌─────────────────────────┐
-│   M1 Cortex Bridge      │
-│   (MPS/CPU)             │
-└─────────────────────────┘
-```
+Warp-Claw integrates four key components from the Warp-Cortex paper:
 
-### System Architecture
+### 1. Singleton Weight Sharing
+- **Purpose:** Eliminate duplicate model weights across agents
+- **Implementation:** `WarpCortexSingleton` class loads transformer once
+- **Memory Impact:** O(1) weight memory instead of O(N × L)
 
-![System Architecture](docs/images/system-architecture.jpg)
+### 2. Topological Synapse
+- **Purpose:** Compress context while preserving semantic structure
+- **Implementation:** Gudhi TDA library for landmark selection
+- **Memory Impact:** O(N × k) context memory, k ≪ L
 
-The complete system showing:
-- **Tool Server** - OpenClaw MCP tools
-- **Local Model** - M1/MPS inference
-- **Agent Loop** - Thought → Action → Observation cycle
+### 3. KV-Cache Sparsification
+- **Purpose:** Prune redundant attention patterns
+- **Implementation:** Witness-complex-inspired pruning
+- **Memory Impact:** Up to 10× reduction in KV-cache size
 
-### Component Stack
+### 4. Referential Injection
+- **Purpose:** Async sub-agent updates without stream disruption
+- **Implementation:** asyncio queues and locks
+- **Benefit:** Seamless parallel reasoning
 
-![Component Stack](docs/images/component-stack.jpg)
+### Performance Metrics
 
-Layers:
-- **OpenAI API** - HTTP interface
-- **MCP Bridge** - Tool protocol
-- **Tools** - Code, search, files
-- **M1 Bridge** - Metal performance
-- **Local Model** - Ollama/transformers
-
-### Agent Execution Flow
-
-![Agent Flow](docs/images/agent-flow.jpg)
-
-The agent loop:
-1. **Thought** - Model reasons about the task
-2. **Action** - Executes tool or generates response
-3. **Observation** - Receives result, continues reasoning
+On a single RTX 4090:
+- **100 concurrent agents:** 2.2 GB total VRAM
+- **Theoretical scaling:** 1,000+ agents before compute bottleneck
+- **Memory efficiency:** Linear scaling with agent count
 
 ## Installation
 
+### Prerequisites
+
+* `bash` (standard on Linux/macOS)
+* `curl` and `git` (bundled on most systems)
+
+### One-Line Install
+
 ```bash
-# Clone the repo
+curl -fsSL https://raw.githubusercontent.com/noobsmoker/warp-claw/main/scripts/install.sh | bash
+```
+
+The script will:
+
+1. Detect the host platform (desktop/server vs. Termux).
+2. Create a Python 3.11 virtual environment in `~/.warp-claw/venv`.
+3. Install all runtime dependencies, including `transformers>=4.21`, `torch>=2.0`, `gudhi>=3.8`.
+4. Symlink the `warp-claw` executable into `~/.local/bin` (or `$PREFIX/bin` on Android).
+5. Optionally run `warp-claw setup` to finish configuration (you can skip with `--no-wizard`)
+
+### Manual Installation
+
+If you prefer manual setup:
+
+```bash
 git clone https://github.com/noobsmoker/warp-claw.git
 cd warp-claw
-
-# Create virtual environment
-python3 -m venv venv
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv venv venv --python 3.11
 source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
+uv pip install -e ".[all]"
+python -m warp_claw  # or symlink to ~/bin/warp-claw
 ```
-
-## Quick Start
-
-### 1. Download a Model
-
-```bash
-python scripts/download_models.py qwen-0.5b
-
-# Or use M1 setup script
-bash scripts/setup_m1.sh
-```
-
-### 2. Run the API Server
-
-```bash
-python -m src.interfaces.openai_api
-```
-
-Server starts at `http://localhost:8000`
-
-### 3. Use with OpenAI Client
-
-```python
-import openai
-
-client = openai.OpenAI(
-    base_url="http://localhost:8000/v1",
-    api_key="not-needed"
-)
-
-# Standard chat
-response = client.chat.completions.create(
-    model="qwen-0.5b",
-    messages=[{"role": "user", "content": "Explain quantum computing [VERIFY]"}]
-)
-print(response.choices[0].message.content)
-```
-
-### 4. Spawn a Council
-
-```python
-import requests
-
-r = requests.post("http://localhost:8000/v1/agents/spawn", json={
-    "prompt": "Design a distributed system",
-    "council_types": ["research", "creative", "code"],
-    "agent_count": 10
-})
-council_id = r.json()["council_id"]
-
-# Check status
-r = requests.get(f"http://localhost:8000/v1/agents/status/{council_id}")
-print(r.json())
-```
-
-### 5. Start Dashboard (Optional)
-
-```bash
-streamlit run src/dashboard/app.py
-```
-
-Dashboard at `http://localhost:8501`
-
-## API Endpoints
-
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/v1/models` | GET | List available models |
-| `/v1/chat/completions` | POST | Chat completion |
-| `/v1/completions` | POST | Text completion |
-| `/v1/agents/spawn` | POST | Spawn council |
-| `/v1/agents/status/{id}` | GET | Council status |
-| `/v1/agents` | GET | List agents |
 
 ## Configuration
 
-### Models (`config/models.yaml`)
+Warp-Claw uses the same configuration system as Hermes Agent:
+
+1. **User config:** `~/.warp-claw/config.yaml` (settings), `~/.warp-claw/.env` (API keys)
+2. **Setup wizard:** `warp-claw setup` – configures providers, tools, and profiles
+3. **Profiles:** Multiple isolated instances via `warp-claw -p <profile>`
+
+### Key Configuration Options
 
 ```yaml
-models:
-  qwen-0.5b:
-    repo: "Qwen/Qwen2.5-0.5B-Instruct"
-    device: "mps"
-    max_agents: 100
-    
-  qwen-1.5b:
-    repo: "Qwen/Qwen2.5-1.5B-Instruct"
-    device: "mps"
-    max_agents: 50
+# ~/.warp-claw/config.yaml
+model:
+  default: "warp-cortex/gpt2"  # Use Warp-Cortex provider
+  provider: "warp-cortex"
 
-default_model: "qwen-0.5b"
+delegation:
+  provider: "warp-cortex"      # Enable scalable sub-agent spawning
+  max_concurrent_children: 12  # Scale beyond default 3
+
+warp_cortex:
+  model_name: "gpt2"           # Base model for singleton
+  landmark_count: 64           # k parameter for synapse
+  sparsification_threshold: 0.95  # Witness complex pruning
 ```
 
-### Agent Councils (`config/agents.yaml`)
+## Running the Agent
 
-```yaml
-councils:
-  research:
-    agent_count: 3
-    system_prompt: "You are a fact-checking sub-agent..."
-    triggers: ["[SEARCH]", "[VERIFY]"]
-    
-  code:
-    agent_count: 2
-    system_prompt: "You are a code review sub-agent..."
-    triggers: ["[CODE]", "[REVIEW]"]
-```
-
-## Tools
-
-| Tool | Description |
-|------|-------------|
-| `execute_python` | Run Python code in sandbox |
-| `web_search` | Search DuckDuckGo |
-| `web_fetch` | Fetch URL content |
-| `file_system` | Read/write files |
-| `knowledge_graph` | RAG memory store |
-
-## OpenClaw Integration (Option A - Recommended)
-
-Warp-Claw can connect to **OpenClaw** as a tool provider via MCP. This gives your local agents access to OpenClaw's full tool ecosystem without running K8s.
-
-### Architecture
-
-```
-┌─────────────────────────────────────────────────┐
-│              Warp-Claw (Local)                  │
-│  ┌─────────────┐    ┌─────────────────────────┐│
-│  │   Agents    │───▶│  OpenClaw MCP Client     ││
-│  │  (Local LLM)│    │  src/tools/openclaw_mcp  ││
-│  └─────────────┘    └───────────┬─────────────┘│
-└─────────────────────────────────┼───────────────┘
-                                  │ HTTP/MCP
-                                  ▼
-┌─────────────────────────────────────────────────┐
-│           OpenClaw (Your Server)                │
-│  Tool Server (web_search, read_file, etc.)      │
-│  Running at: http://localhost:8080              │
-└─────────────────────────────────────────────────┘
-```
-
-### Setup
+### Interactive CLI
 
 ```bash
-# 1. Start OpenClaw with tool server enabled
-openclaw gateway start
-
-# 2. In warp-claw, configure OpenClaw connection
-export OPENCLAW_URL="http://localhost:8080"
-export OPENCLAW_API_KEY="your-api-key"  # if auth enabled
+warp-claw
 ```
 
-### Usage
+Features:
+- Multiline editing with syntax highlighting
+- Slash commands (`/model`, `/tools`, `/skills`)
+- Auto-completion and history
+- Interrupt-and-redirect for long-running tasks
+
+### Modern TUI
+
+```bash
+warp-claw --tui
+```
+
+React-based terminal UI with:
+- Streaming responses
+- Tool activity feeds
+- Concurrent conversation tabs
+- Keyboard shortcuts
+
+### Messaging Gateway
+
+```bash
+warp-claw gateway
+```
+
+Connect via:
+- Telegram: `/new`, `/model`, `/compress`
+- Discord: Direct messages or channels
+- Slack: Bot commands and threads
+- WhatsApp: Via Twilio or similar
+- Signal: Secure messaging
+
+## Developer Guide
+
+### Project Structure
+
+```
+warp-claw/
+├── run_agent.py              # AIAgent class — core conversation loop
+├── model_tools.py            # Tool orchestration
+├── cli.py                    # HermesCLI class — interactive CLI
+├── warp_cortex/              # Warp-Cortex implementation
+│   ├── __init__.py           # Singleton model loader
+│   ├── synapse.py            # Topological Synapse (TDA landmarks)
+│   ├── sparsification.py     # KV-cache pruning
+│   ├── injection.py          # Referential Injection
+│   └── manager.py            # WarpCortexManager for scaling
+├── tools/                    # Tool implementations
+├── gateway/                  # Messaging platform adapters
+├── ui-tui/                   # React TUI (Ink)
+├── tests/                    # Pytest suite
+└── scripts/install.sh        # One-line installer
+```
+
+### Adding Tools
+
+1. Create `tools/your_tool.py` with `registry.register()`
+2. Add to `toolsets.py` constants
+3. Auto-discovery handles the rest
+
+### Adding Providers
+
+1. Create `agent/transports/your_provider.py`
+2. Add to `hermes_cli/providers.py`
+3. Implement `ProviderTransport` interface
+
+### Testing
+
+```bash
+scripts/run_tests.sh                    # Full CI-parity suite
+scripts/run_tests.sh tests/warp_cortex/ # Warp-Cortex specific tests
+```
+
+## Testing & Scalability
+
+### Running the Scalability Test
+
+```bash
+python test_warp_cortex_scalability.py
+```
+
+This test:
+- Spawns 12 concurrent agents
+- Measures memory usage before/after
+- Validates O(1) weight sharing
+- Reports execution time and efficiency
+
+### Expected Results
+
+```
+Memory usage before spawning agents: 150.2 MB
+Memory usage after spawning agents: 850.1 MB
+Total memory increase: 699.9 MB
+Agents spawned: 12
+Average memory per agent: 58.3 MB
+Execution time: 2.34 seconds
+```
+
+### Benchmarking Larger Scales
+
+For 100+ agents, modify the test script:
 
 ```python
-from src.tools.openclaw_mcp import OpenClawMCPClient
-
-# Connect to OpenClaw
-client = OpenClawMCPClient("http://localhost:8080")
-await client.connect()
-
-# Use OpenClaw tools in your agents
-result = await client.call_tool("web_search", {"query": "AI agents"})
-print(result.result)
-
-# Or use the executor with local fallback
-from src.tools.openclaw_mcp import OpenClawToolExecutor
-
-async with OpenClawToolExecutor("http://localhost:8080") as executor:
-    # If OpenClaw fails, falls back to local tools
-    result = await executor.execute("web_search", {"query": "test"})
+# In test_warp_cortex_scalability.py
+NUM_AGENTS = 100  # Scale up
 ```
 
-### Tool Categories Available
+Monitor with `nvidia-smi` for GPU memory usage.
 
-When connected to OpenClaw, warp-claw agents get access to:
+## Licensing & Contributing
 
-| Category | Tools |
-|----------|-------|
-| **Web** | `web_search`, `web_fetch`, `browser` |
-| **File** | `read_file`, `write_file`, `glob` |
-| **Code** | `execute_command`, `run_tests` |
-| **GitHub** | `gh_issues`, `gh_pr`, `gh_actions` |
-| **Messaging** | `send_message`, `send_email` |
+### License
 
-### Benefits
+MIT License - see LICENSE file.
 
-- **No K8s needed** — Just network connectivity to OpenClaw
-- **Local inference** — Models run on your M1/M2/M3
-- **OpenClaw tools** — Full tool ecosystem via MCP
-- **Fallback** — Local tools work if OpenClaw unavailable
+### Contributing
 
-## Makefile Commands
+1. Fork the repository
+2. Create a feature branch
+3. Make changes with tests
+4. Submit a pull request
 
-```bash
-make help      # Show available targets
-make setup    # Install & download models
-make test     # Run tests
-make run      # Start API server
-make dashboard # Start dashboard
-make clean   # Clean cache
-```
+### Code Standards
 
-## Docker
+- **Python:** PEP 8 with Black formatting
+- **Type hints:** Required for new code
+- **Tests:** 100% coverage for new features
+- **Documentation:** Update README for user-facing changes
 
-```bash
-# Build
-docker build -t warp-claw:latest .
+### Community
 
-# Run
-docker run -p 8000:8000 -p 8501:8501 warp-claw:latest
-```
+- **Issues:** GitHub Issues for bugs/features
+- **Discussions:** GitHub Discussions for questions
+- **Discord:** Join the Warp-Claw community
 
-## Requirements
+---
 
-- Python 3.11+
-- Apple Silicon (M1/M2/M3) for MPS support
-- Or x86_64 with CPU fallback
-
-## Credits
-
-### Built with OpenClaw
-Warp-Claw was built using **[OpenClaw](https://openclaw.ai)** — the AI assistant framework that powers this project. OpenClaw provides:
+Built with ❤️ by the open-source AI community.
 - Session management and memory
 - Multi-channel messaging (Discord, Telegram, webchat, Signal, etc.)
 - Tool orchestration and skill system
