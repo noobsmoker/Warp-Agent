@@ -281,6 +281,30 @@ MIT License - see LICENSE file.
 - **Discussions:** GitHub Discussions for questions
 - **Discord:** Join the Warp-Claw community
 
+## Credits
+
+### Built on Hermes Agent
+
+Warp-Claw is built upon **[Hermes Agent](https://github.com/nousresearch/hermes-agent)** — the self-improving AI agent framework by Nous Research. This project extends Hermes with Warp-Cortex scaling technology to enable massive multi-agent coordination.
+
+**Hermes Agent provides:**
+- Core AI agent architecture and conversation loops
+- Comprehensive tool system (40+ tools)
+- Multi-platform messaging gateways (Telegram, Discord, Slack, etc.)
+- CLI/TUI interfaces and slash commands
+- Skills system and memory management
+- Open-source licensing (MIT)
+
+**Warp-Claw adds:**
+- Warp-Cortex scaling infrastructure
+- Singleton weight sharing for memory efficiency
+- Topological Synapse for context compression
+- Million-agent coordination capabilities
+
+### Warp-Cortex Research
+
+Warp-Cortex technology is based on research by Jorge L. Ruiz Williams, published as "[Warp-Cortex: An Asynchronous, Memory-Efficient Architecture for Million-Agent Cognitive Scaling on Consumer Hardware](https://arxiv.org/abs/2601.01298)".
+
 ---
 
 Built with ❤️ by the open-source AI community.
