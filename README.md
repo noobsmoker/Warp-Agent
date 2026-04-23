@@ -315,6 +315,10 @@ Built with ❤️ by the open-source AI community.
 
 ### Additional Credits
 
+**Special Recognition:**
+- **[OpenClaw](https://github.com/openclaw/openclaw)** - Outstanding contribution to the AI open source community through their comprehensive tool ecosystem and MCP server architecture
+
+**Technology Stack:**
 - [Warp-Cortex](https://github.com/JorgeLRW/warp-cortex) - Multi-agent architecture inspiration
 - [Qwen](https://github.com/QwenLM/Qwen) - Default models
 - [Llama](https://github.com/meta-llama) - Alternative models
