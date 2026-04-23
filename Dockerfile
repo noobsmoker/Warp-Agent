@@ -28,4 +28,4 @@ EXPOSE 8000 8001 8501
 CMD ["python", "-m", "src.interfaces.openai_api"]
 
 # Optional: Build arguments for ARM64 build
-# docker buildx build --platform linux/arm64 -t warp-claw:latest .
+# docker buildx build --platform linux/arm64 -t warp-agent:latest .

@@ -1,12 +1,12 @@
 #!/bin/bash
 # ============================================================================
-# Warp-Claw Installer
+# Warp Agent Installer
 # ============================================================================
-# One-line installer for the Warp-Cortex-enabled Hermes Agent (Warp-Claw).
+# One-line installer for the Warp-Cortex-enabled Hermes Agent (Warp Agent).
 # Works on Linux, macOS, WSL2, and Android (Termux).
 #
 # Usage:
-#   curl -fsSL https://raw.githubusercontent.com/noobsmoker/warp-claw/main/scripts/install.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/noobsmoker/warp-agent/main/scripts/install.sh | bash
 #
 # This script:
 # 1. Detects platform (desktop/server vs Android/Termux)
@@ -74,8 +74,8 @@ install_uv() {
 }
 
 setup_venv() {
-    local venv_path="$HOME/.warp-claw/venv"
-    
+    local venv_path="$HOME/.warp-agent/venv"
+
     echo -e "${CYAN}Setting up Python $PYTHON_VERSION virtual environment at $venv_path...${NC}"
     
     if [ ! -d "$venv_path" ]; then
@@ -99,12 +99,12 @@ setup_venv() {
 
 create_symlinks() {
     local bin_dir="$(get_command_link_dir)"
-    local venv_path="$HOME/.warp-claw/venv"
-    
-    echo -e "${CYAN}Creating symlink for warp-claw command in $bin_dir...${NC}"
-    
+    local venv_path="$HOME/.warp-agent/venv"
+
+    echo -e "${CYAN}Creating symlink for warp-agent command in $bin_dir...${NC}"
+
     mkdir -p "$bin_dir"
-    ln -sf "$venv_path/bin/warp-claw" "$bin_dir/warp-claw"
+    ln -sf "$venv_path/bin/warp-agent" "$bin_dir/warp-agent"
     
     # Add to PATH if needed
     if ! echo "$PATH" | grep -q "$bin_dir"; then
@@ -116,15 +116,15 @@ create_symlinks() {
 run_setup() {
     echo -e "${GREEN}Installation complete!${NC}"
     echo ""
-    echo -e "${CYAN}To start using Warp-Claw:${NC}"
-    echo "  warp-claw              # Interactive CLI"
-    echo "  warp-claw --tui        # Modern TUI"
-    echo "  warp-claw gateway      # Start messaging gateway"
+    echo -e "${CYAN}To start using Warp Agent:${NC}"
+    echo "  warp-agent             # Interactive CLI"
+    echo "  warp-agent --tui       # Modern TUI"
+    echo "  warp-agent gateway     # Start messaging gateway"
     echo ""
     echo -e "${CYAN}First-time setup:${NC}"
-    echo "  warp-claw setup        # Configure providers and tools"
+    echo "  warp-agent setup       # Configure providers and tools"
     echo ""
-    echo -e "${YELLOW}Note: Restart your shell if the 'warp-claw' command is not found.${NC}"
+    echo -e "${YELLOW}Note: Restart your shell if the 'warp-agent' command is not found.${NC}"
 }
 
 main() {

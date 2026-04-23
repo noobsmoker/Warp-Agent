@@ -26,8 +26,8 @@ class FileSystemTool(BaseTool):
     
     # Allowed base directories (security)
     ALLOWED_DIRS = [
-        os.path.expanduser("~/warp-claw"),
-        "/tmp/warp-claw",
+        os.path.expanduser("~/warp-agent"),
+        "/tmp/warp-agent",
     ]
     
     def __init__(self, allowed_dirs: Optional[List[str]] = None):

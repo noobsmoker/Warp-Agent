@@ -40,7 +40,7 @@ clean:
 	find . -name "*.pyo" -delete
 
 docker-build:
-	docker build -t warp-claw:latest .
+	docker build -t warp-agent:latest .
 
 docker-run:
-	docker run -p 8000:8000 -p 8501:8501 warp-claw:latest
+	docker run -p 8000:8000 -p 8501:8501 warp-agent:latest

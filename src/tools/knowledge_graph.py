@@ -43,7 +43,7 @@ class KnowledgeGraph(BaseTool):
     tags = ["memory", "rag", "knowledge", "vector"]
     default_timeout = 30
     
-    def __init__(self, data_dir: str = "/tmp/warp-claw/knowledge"):
+    def __init__(self, data_dir: str = "/tmp/warp-agent/knowledge"):
         super().__init__()
         self.data_dir = data_dir
         os.makedirs(data_dir, exist_ok=True)

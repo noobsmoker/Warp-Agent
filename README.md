@@ -1,29 +1,29 @@
-# Warp-Claw: Warp-Cortex-Enabled Hermes Agent
+# Warp Agent: Warp-Cortex-Enabled Hermes Agent
 
 **One-liner install:**
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/noobsmoker/warp-claw/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/noobsmoker/warp-agent/main/scripts/install.sh | bash
 ```
 
 The installer works on Linux, macOS, WSL2, and Android (Termux). It automatically:
 
 * Installs a Python 3.11 virtual environment
 * Adds the required dependencies (`transformers`, `torch`, `gudhi`, plus all Hermes core deps)
-* Sets up the `warp-claw` command in `~/.local/bin` (or `$PREFIX/bin` on Termux)
+* Sets up the `warp-agent` command in `~/.local/bin` (or `$PREFIX/bin` on Termux)
 * Runs the Hermes setup wizard (you can skip it with `--no-wizard`)
 
 After installation, start the agent with:
 
 ```bash
-warp-claw               # interactive CLI (full Hermes UI)
-warp-claw --tui         # Ink-based TUI
-warp-claw gateway        # launch the messaging gateway (Telegram, Discord, etc.)
+warp-agent              # interactive CLI (full Hermes UI)
+warp-agent --tui        # Ink-based TUI
+warp-agent gateway      # launch the messaging gateway (Telegram, Discord, etc.)
 ```
 
 ## Overview
 
-Warp-Claw is the **Hermes Agent** enriched with the **Warp-Cortex** infrastructure. It provides:
+Warp Agent is the **Hermes Agent** enriched with the **Warp-Cortex** infrastructure. It provides:
 
 * **Singleton weight sharing** – load a transformer model once and share it across all agents (O(1) weight memory).
 * **Topological Synapse** – TDA-based landmark selection that preserves the context manifold while compressing the KV-cache (O(N·k) context memory).
@@ -38,7 +38,7 @@ All of this is delivered in a **single binary-like install** that can be run on 
 | Feature | Description |
 |---------|-------------|
 | **One-Line Install** | `curl … | bash` – no manual dependencies. |
-| **Unified CLI / TUI** | Classic prompt-toolkit CLI *or* modern Ink TUI (`warp-claw --tui`). |
+| **Unified CLI / TUI** | Classic prompt-toolkit CLI *or* modern Ink TUI (`warp-agent --tui`). |
 | **Multi-Platform Gateways** | Telegram, Discord, Slack, WhatsApp, Signal, Matrix, etc. |
 | **Modular Tool System** | 40+ built-in tools, plus community-contributed skills via the Skills Hub. |
 | **Memory-Efficient Scaling** | Singleton model + Topological Synapse = constant weight memory, linear-in-k context memory. |
@@ -88,43 +88,43 @@ On a single RTX 4090:
 ### One-Line Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/noobsmoker/warp-claw/main/scripts/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/noobsmoker/warp-agent/main/scripts/install.sh | bash
 ```
 
 The script will:
 
 1. Detect the host platform (desktop/server vs. Termux).
-2. Create a Python 3.11 virtual environment in `~/.warp-claw/venv`.
+2. Create a Python 3.11 virtual environment in `~/.warp-agent/venv`.
 3. Install all runtime dependencies, including `transformers>=4.21`, `torch>=2.0`, `gudhi>=3.8`.
-4. Symlink the `warp-claw` executable into `~/.local/bin` (or `$PREFIX/bin` on Android).
-5. Optionally run `warp-claw setup` to finish configuration (you can skip with `--no-wizard`)
+4. Symlink the `warp-agent` executable into `~/.local/bin` (or `$PREFIX/bin` on Android).
+5. Optionally run `warp-agent setup` to finish configuration (you can skip with `--no-wizard`)
 
 ### Manual Installation
 
 If you prefer manual setup:
 
 ```bash
-git clone https://github.com/noobsmoker/warp-claw.git
-cd warp-claw
+git clone https://github.com/noobsmoker/warp-agent.git
+cd warp-agent
 curl -LsSf https://astral.sh/uv/install.sh | sh
 uv venv venv --python 3.11
 source venv/bin/activate
 uv pip install -e ".[all]"
-python -m warp_claw  # or symlink to ~/bin/warp-claw
+python -m warp_agent  # or symlink to ~/bin/warp-agent
 ```
 
 ## Configuration
 
-Warp-Claw uses the same configuration system as Hermes Agent:
+Warp Agent uses the same configuration system as Hermes Agent:
 
-1. **User config:** `~/.warp-claw/config.yaml` (settings), `~/.warp-claw/.env` (API keys)
-2. **Setup wizard:** `warp-claw setup` – configures providers, tools, and profiles
-3. **Profiles:** Multiple isolated instances via `warp-claw -p <profile>`
+1. **User config:** `~/.warp-agent/config.yaml` (settings), `~/.warp-agent/.env` (API keys)
+2. **Setup wizard:** `warp-agent setup` – configures providers, tools, and profiles
+3. **Profiles:** Multiple isolated instances via `warp-agent -p <profile>`
 
 ### Key Configuration Options
 
 ```yaml
-# ~/.warp-claw/config.yaml
+# ~/.warp-agent/config.yaml
 model:
   default: "warp-cortex/gpt2"  # Use Warp-Cortex provider
   provider: "warp-cortex"
@@ -183,7 +183,7 @@ Connect via:
 ### Project Structure
 
 ```
-warp-claw/
+warp-agent/
 ├── run_agent.py              # AIAgent class — core conversation loop
 ├── model_tools.py            # Tool orchestration
 ├── cli.py                    # HermesCLI class — interactive CLI
@@ -279,7 +279,7 @@ MIT License - see LICENSE file.
 
 - **Issues:** GitHub Issues for bugs/features
 - **Discussions:** GitHub Discussions for questions
-- **Discord:** Join the Warp-Claw community
+- **Discord:** Join the Warp Agent community
 
 ## Credits
 

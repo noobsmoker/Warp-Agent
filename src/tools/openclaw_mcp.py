@@ -1,8 +1,8 @@
 """
-OpenClaw MCP Client - Connect warp-claw to OpenClaw tools
+OpenClaw MCP Client - Connect warp-agent to OpenClaw tools
 
 Addresses: Option A (Recommended) - OpenClaw as Tool Provider
-- warp-claw remains local inference engine
+- warp-agent remains local inference engine
 - MCP client connects to OpenClaw's tool server
 - Agents call OpenClaw tools via MCP when needed
 - No K8s - just network connectivity to OpenClaw instance
@@ -45,7 +45,7 @@ class ToolResult:
 
 class OpenClawMCPClient:
     """
-    MCP client that connects warp-claw to OpenClaw's tool server.
+    MCP client that connects warp-agent to OpenClaw's tool server.
     
     Usage:
         client = OpenClawMCPClient("http://localhost:8080")
@@ -209,7 +209,7 @@ class OpenClawToolExecutor:
     """
     Executes OpenClaw tools with retry logic and fallback.
     
-    Use this in warp-claw agents when they need external tools.
+    Use this in warp-agent agents when they need external tools.
     """
     
     def __init__(

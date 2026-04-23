@@ -168,14 +168,14 @@ async def list_models():
                     "id": model_id,
                     "object": "model",
                     "created": now,
-                    "owned_by": "warp-claw"
+                    "owned_by": "warp-agent"
                 })
     
     # Add default
     if not models:
         models = [
-            {"id": "qwen-0.5b", "object": "model", "created": 1700000000, "owned_by": "warp-claw"},
-            {"id": "qwen-1.5b", "object": "model", "created": 1700000000, "owned_by": "warp-claw"},
+            {"id": "qwen-0.5b", "object": "model", "created": 1700000000, "owned_by": "warp-agent"},
+            {"id": "qwen-1.5b", "object": "model", "created": 1700000000, "owned_by": "warp-agent"},
         ]
     
     return {"object": "list", "data": models}

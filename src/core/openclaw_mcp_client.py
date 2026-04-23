@@ -1,6 +1,6 @@
 """
-OpenClaw MCP Client Integration for Warp-Claw
-Enables warp-claw agents to call OpenClaw tools via Model Context Protocol
+OpenClaw MCP Client Integration for Warp Agent
+Enables warp-agent agents to call OpenClaw tools via Model Context Protocol
 """
 
 import asyncio
@@ -38,7 +38,7 @@ class OpenClawToolResult:
 class OpenClawMCPClient:
     """
     MCP Client that connects to OpenClaw's tool server
-    Allows warp-claw agents to use OpenClaw's tools (web search, code execution, etc.)
+    Allows warp-agent agents to use OpenClaw's tools (web search, code execution, etc.)
     """
 
     def __init__(self, openclaw_url: str = None):
@@ -183,10 +183,10 @@ class OpenClawMCPClient:
         print("✓ Disconnected from OpenClaw")
 
 
-class WarpClawOpenClawBridge:
+class WarpAgentOpenClawBridge:
     """
-    Bridge that integrates OpenClaw tools into warp-claw's agent system
-    This is the main interface used by warp-claw's council orchestrator
+    Bridge that integrates OpenClaw tools into warp-agent's agent system
+    This is the main interface used by warp-agent's council orchestrator
     """
 
     def __init__(self, openclaw_url: str = "http://localhost:3000/mcp"):
@@ -205,7 +205,7 @@ class WarpClawOpenClawBridge:
     async def execute_tool(self, tool_name: str, **kwargs) -> str:
         """
         Execute an OpenClaw tool and return result as string
-        This is the method called by warp-claw agents during their execution
+        This is the method called by warp-agent agents during their execution
 
         Args:
             tool_name: Tool to execute

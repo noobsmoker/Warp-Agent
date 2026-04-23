@@ -144,7 +144,7 @@ class MCPBridge:
                 "resources": {}
             },
             "serverInfo": {
-                "name": "warp-claw",
+                "name": "warp-agent",
                 "version": "0.1.0"
             }
         }

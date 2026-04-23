@@ -9,7 +9,7 @@ import re
 from typing import Optional, List, Dict, Any
 
 # Import the OpenClaw bridge
-from .openclaw_mcp_client import WarpClawOpenClawBridge
+from .openclaw_mcp_client import WarpAgentOpenClawBridge
 
 # Constants
 DEFAULT_QUERY_TRUNCATE = 200
@@ -24,7 +24,7 @@ class M1CortexBridgeWithOpenClaw:
 
     def __init__(self, model_id: str = "qwen-0.5b", openclaw_url: str = "http://localhost:3000/mcp", **kwargs):
         self.model_id = model_id
-        self.openclaw_bridge: Optional[WarpClawOpenClawBridge] = None
+        self.openclaw_bridge: Optional[WarpAgentOpenClawBridge] = None
         self._openclaw_url = openclaw_url
         self._openclaw_initialized = False
         self.model = None
@@ -35,7 +35,7 @@ class M1CortexBridgeWithOpenClaw:
         Initialize connection to OpenClaw's tool server
         Call this after creating the bridge, before generating
         """
-        self.openclaw_bridge = WarpClawOpenClawBridge(self._openclaw_url)
+        self.openclaw_bridge = WarpAgentOpenClawBridge(self._openclaw_url)
         self._openclaw_initialized = await self.openclaw_bridge.initialize()
         return self._openclaw_initialized
 
@@ -120,7 +120,7 @@ class M1CortexBridgeWithOpenClaw:
 
     async def _execute_local_tool(self, tool_name: str, prompt: str) -> Optional[Dict]:
         """
-        Execute a tool locally (original warp-claw behavior)
+        Execute a tool locally (original warp-agent behavior)
         """
         # Local stub - full implementation would use actual local tools
         return {
